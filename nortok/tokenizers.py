@@ -73,7 +73,7 @@ class WordTokenizer(TweetTokenizer):
         toks=super(WordTokenizer,self).tokenize(text)[:max_length]
         return toks
 
-    def texts_to_sequences(texts,max_len,n_texts=None):
+    def texts_to_sequences(self,texts,max_len,n_texts=None):
         seqs=_texts_to_seqs(texts,self.tokenize,self.word2ind,max_len,n_texts)
         return seqs
 
