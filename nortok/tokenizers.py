@@ -59,8 +59,8 @@ def _texts_to_seqs(texts,tokfunc,word2ind,max_len,n_texts=None):
     seqs=np.zeros((n_texts,max_len),dtype='int32')
     for iii,txt in enumerate(texts):
         toks=tokfunc(txt,max_len)
-        max_len=min(max_len,len(toks))
-        seqs[iii,:max_len]=[word2ind[tok] for tok in toks]
+        ml=min(max_len,len(toks))
+        seqs[iii,:ml]=[word2ind[tok] for tok in toks]
     return seqs
 
 def texts_to_seqs_var(texts,tokfunc,word2ind,max_len):
