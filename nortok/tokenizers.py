@@ -5,14 +5,18 @@ import numpy as np
 from collections import defaultdict,Counter
 import logging as logger
 
+def dd_def():
+    return 0
+
 def _fit_tokenizer(texts,tokfunc,max_length=None):
     """
     Makes word dictionaries based on text. Zero (0) is reserved.
     """
+
     doc_count=0
     wordcount=Counter()
     ind2word={}
-    word2ind=defaultdict(lambda:0)
+    word2ind=defaultdict(dd_def)
     maxInd=0
     for text in texts:
         out=tokfunc(text,max_length=max_length)
@@ -27,14 +31,16 @@ def _fit_tokenizer(texts,tokfunc,max_length=None):
     return word2ind,ind2word,wordcount
 
 def _max_word_vocab(word2ind,ind2word,wordcount,max_words=None):
+    def skey(x):
+        return x[1]
     if max_words is None:
         return word2ind,ind2word
     if len(word2ind)<max_words:
         logger.info('len(word2ind)<=max_words:{0}'.format(max_words))
         return word2ind,ind2word
     wcs=list(wordcount.items())
-    wcs.sort(key=lambda x:x[1],reverse=True)
-    w2i=defaultdict(lambda:0)
+    wcs.sort(key=skey,reverse=True)
+    w2i=defaultdict(dd_def)
     i2w={}
     wordInd=1
     for w in wcs:
@@ -53,6 +59,7 @@ def _texts_to_seqs(texts,tokfunc,word2ind,max_len,n_texts=None):
     seqs=np.zeros((n_texts,max_len),dtype='int32')
     for iii,txt in enumerate(texts):
         toks=tokfunc(txt,max_len)
+        max_len=min(max_len,len(toks))
         seqs[iii,:max_len]=[word2ind[tok] for tok in toks]
     return seqs
 
@@ -88,7 +95,7 @@ class RawCharTokenizer(object):
         self.max_words=max_words
         if word2ind is not None:
             self.document_count=1
-            self.word2ind=defaultdict(lambda:0,word2ind)
+            self.word2ind=defaultdict(dd_def,word2ind)
         #self.max_words=max_words
 
 
@@ -111,7 +118,7 @@ class HierarchicalTokenizer(object):
     def __init__(self,word2ind=None,max_words=None):
         if word2ind is not None:
             self.document_count=1
-            self.word2ind=defaultdict(lambda:0,word2ind)
+            self.word2ind=defaultdict(dd_def,word2ind)
         self.max_words=max_words
         self.wordtok=WordTokenizer()
         self.chartok=RawCharTokenizer(max_words=max_words)
