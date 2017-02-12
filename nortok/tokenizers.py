@@ -4,6 +4,7 @@ from nltk.tokenize import TweetTokenizer
 import numpy as np
 from collections import defaultdict,Counter
 import logging as logger
+from nortok.stopwords import get_norwegian_stopwords
 
 def dd_def():
     return 0
@@ -70,14 +71,23 @@ def texts_to_seqs_var(texts,tokfunc,word2ind,max_len):
 
 
 class WordTokenizer(TweetTokenizer):
-    def __init__(self,word2ind=None,max_words=None,**kwargs):
+    def __init__(self,word2ind=None,use_stopwords=False,max_words=None,**kwargs):
         super(WordTokenizer, self).__init__(**kwargs)
         if word2ind is not None:
             self.document_count=1
             self.word2ind=defaultdict(lambda:0,word2ind)
+        if use_stopwords:
+            if isinstance(use_stopwords,set):
+                self.stopwords=use_stopwords
+            else:
+                self.stopwords=get_norwegian_stopwords()
+        else:
+            self.stopwords=False
 
     def tokenize(self,text,max_length=512):
         toks=super(WordTokenizer,self).tokenize(text)[:max_length]
+        if self.stopwords:
+            toks=[t for t in toks if t not in self.stopwords]
         return toks
 
     def texts_to_sequences(self,texts,max_len,n_texts=None):

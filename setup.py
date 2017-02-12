@@ -8,6 +8,8 @@ setup(name='nortok',
       author_email='erlend.aune.1983@gmail.com',
       license='MIT',
       packages=['nortok'],
+      package_dir={'nortok': 'nortok'},
+      package_data={'mypkg': ['nortok/data/*.*']},
       install_requires=[
           'lxml',
           'nltk',
