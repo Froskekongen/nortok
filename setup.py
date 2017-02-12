@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='nortok',
-      version='0.1.2',
+      version='0.1.4',
       description='Tokenization and parsing',
       url='http://github.com/Froskekongen/nortok',
       author='Erlend Aune',
