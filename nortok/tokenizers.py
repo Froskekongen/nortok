@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from nltk.tokenize import TweetTokenizer
+from nltk.stem.snowball import SnowballStemmer
 import numpy as np
 from collections import defaultdict,Counter
 import logging as logger
@@ -71,7 +72,7 @@ def texts_to_seqs_var(texts,tokfunc,word2ind,max_len):
 
 
 class WordTokenizer(TweetTokenizer):
-    def __init__(self,word2ind=None,use_stopwords=False,max_words=None,**kwargs):
+    def __init__(self,word2ind=None,use_stopwords=False,use_stemmer=False,max_words=None,**kwargs):
         super(WordTokenizer, self).__init__(**kwargs)
         if word2ind is not None:
             self.document_count=1
@@ -83,11 +84,19 @@ class WordTokenizer(TweetTokenizer):
                 self.stopwords=get_norwegian_stopwords()
         else:
             self.stopwords=False
+            
+        self.use_stemmer=use_stemmer
+        if use_stemmer==True:
+            self.stemmer=SnowballStemmer('norwegian')
 
     def tokenize(self,text,max_length=512):
         toks=super(WordTokenizer,self).tokenize(text)[:max_length]
-        if self.stopwords:
+        if self.stopwords and (not self.use_stemmer):
             toks=[t for t in toks if t not in self.stopwords]
+        elif self.stopwords and self.use_stemmer:
+            toks=[self.stemmer.stem(t) for t in toks if t not in self.stopwords]
+        elif (not self.stopwords) and self.use_stemmer:
+            toks=[self.stemmer.stem(t) for t in toks]
         return toks
 
     def texts_to_sequences(self,texts,max_len,n_texts=None):
