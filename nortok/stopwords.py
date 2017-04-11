@@ -23,3 +23,7 @@ def get_norwegian_stopwords():
     temp1={str(iii) for iii in range(1880,2030)}
     sw.update(temp1)
     return sw
+
+def get_example_data():
+    DATA_PATH = pkg_resources.resource_filename('nortok', 'data/examplearticles.txt')
+    return DATA_PATH
