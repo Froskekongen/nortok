@@ -84,7 +84,7 @@ class WordTokenizer(TweetTokenizer):
                 self.stopwords=get_norwegian_stopwords()
         else:
             self.stopwords=False
-            
+
         self.use_stemmer=use_stemmer
         if use_stemmer==True:
             self.stemmer=SnowballStemmer('norwegian')
@@ -121,7 +121,7 @@ class RawCharTokenizer(object):
     def tokenize(self,text,max_length=2048):
         return list(text.lower())[:max_length]
 
-    def texts_to_sequences(texts,max_len,n_texts=None):
+    def texts_to_sequences(self,texts,max_len,n_texts=None):
         seqs=_texts_to_seqs(texts,RawCharTokenizer.tokenize,self.word2ind,max_len,n_texts)
         return seqs
 
