@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# 
+#
 # The BPE encoding provided herein is adapted from
 # https://github.com/rsennrich/subword-nmt
 
@@ -9,26 +9,36 @@ from collections import defaultdict, Counter
 import copy
 from nortok.stopwords import get_example_data
 from nltk.tokenize import TweetTokenizer
-from nortok.tokenizers import _texts_to_seqs,_fit_tokenizer,_max_word_vocab
+from nortok.tokenizers import _texts_to_seqs,_fit_tokenizer,_max_word_vocab,BaseTokenizer
 import re
 import sys
 
 
-class BPE(object):
-    def __init__(self,n_symbols=32000,min_frequency=2,tokenizer=None,separator='@@'):
+class BPE(BaseTokenizer):
+    def __init__(self,n_symbols=32000,tokenizer=None,separator='@@',**kwargs):
+        super(BPE, self).__init__(**kwargs)
         if not tokenizer:
             self.tokenizer=TweetTokenizer(preserve_case=False)
             self.btok=self.tokenizer.tokenize
         else:
             self.tok=tokenizer
         self.n_symbols=n_symbols
-        self.min_frequency=2
         self.separator=separator
-        self.number_replace=re.compile('\d')
+        self.NUMBER_REPLACE=re.compile('\d')
+
 
     def tok(self,txt):
-        txt=self.number_replace.sub('¤',txt)
+        txt=self.NUMBER_REPLACE.sub('¤',txt)
         return self.btok(txt)
+
+    def def_eobjs(self):
+        return {'n_symbols':self.n_symbols,'separator':self.separator,\
+                    'sorted_vocab':self.sorted_vocab,'mf':self.mf,\
+                    'bpe_codes':self.bpe_codes,'NUMBER_REPLACE':self.NUMBER_REPLACE}
+
+    def save_tokenizer(self,savepath):
+        eobjs=self.def_eobjs()
+        super(BPE, self).save_tokenizer(savepath=savepath,extraobjs=eobjs)
 
     def _get_vocab_from_file(self,fobj):
         """Read text and return dictionary that encodes vocabulary
@@ -159,7 +169,7 @@ class BPE(object):
                 else:
                     big_stats[item] = freq
 
-    def train_bpe(self,verbose=1):
+    def train_bpe(self,verbose=0):
         self.mf=[]
         stats, indices = BPE.get_pair_statistics(self.sorted_vocab)
         big_stats = copy.deepcopy(stats)
@@ -255,7 +265,7 @@ class BPE(object):
         cache[orig] = word
         return word
 
-    def tokenize(self, sentence,max_length=512):
+    def tokenize(self, sentence,max_length=None):
         """segment single sentence (whitespace-tokenized string) with BPE encoding"""
 
         output = []
@@ -267,17 +277,10 @@ class BPE(object):
             for item in new_word[:-1]:
                 output.append(item + self.separator)
             output.append(new_word[-1])
+        if max_length:
+            output=output[:max_length]
+        return output
 
-        return output[:max_length]
-
-    def texts_to_sequences(self,texts,max_len,n_texts=None):
-        seqs=_texts_to_seqs(texts,self.tokenize,self.word2ind,max_len,n_texts)
-        return seqs
-
-    def fit_tokenizer(self,texts,max_length,max_words=None):
-        word2ind,ind2word,wordcount=_fit_tokenizer(texts,self.tokenize,max_length=max_length)
-        self.word2ind,self.ind2word=_max_word_vocab(word2ind,ind2word,wordcount,max_words)
-        self.max_words=max_words
 
 
 

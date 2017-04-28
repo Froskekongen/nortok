@@ -69,11 +69,11 @@ def texts_to_seqs_var(texts,tokfunc,word2ind,max_len=None):
         yield [word2ind[tok] for tok in toks]
 
 class BaseTokenizer(object):
-    def __init__(self,word2ind=None,max_words=None,min_freq=2,**kwargs):
+    def __init__(self,word2ind=None,max_words=None,min_frequency=2,**kwargs):
         if word2ind is not None:
             self.document_count=1
             self.word2ind=defaultdict(dd_def,word2ind)
-        self.min_freq=min_freq
+        self.min_frequency=min_frequency
 
     def tokenize(self,text,max_length=None):
         toks=text.split()
@@ -86,13 +86,12 @@ class BaseTokenizer(object):
         return seqs
 
     def var_length_texts_to_sequences(self,texts):
-        tt=texts_to_seqs_var(texts,self.tokenize,self.word2ind)
-        for seq in tt:
-            yield seq
+        return texts_to_seqs_var(texts,self.tokenize,self.word2ind)
+
 
     def fit_tokenizer(self,texts,max_length,max_words=None):
         word2ind,ind2word,wordcount=_fit_tokenizer(texts,self.tokenize,max_length=max_length)
-        wordcount=dict((q,r) for q,r in wordcount.items() if r>=self.min_freq)
+        wordcount=dict((q,r) for q,r in wordcount.items() if r>=self.min_frequency)
 
         def skey(x):
             return x[1]
@@ -119,12 +118,12 @@ class BaseTokenizer(object):
             pickle.dump(outdict,ff)
 
     @staticmethod
-    def load_tokenizer(savepath):
+    def load_tokenizer(savepath,initClass=None):
         with gzip.open(savepath,'rb') as ff:
             indict=pickle.load(ff)
         indict['word2ind']=defaultdict(dd_def,indict['word2ind'])
         indict['ind2word']=dict(indict['ind2word'])
-        tok=WordTokenizer(indict)
+        tok=initClass(indict)
         for k,v in indict.items():
             setattr(tok,k,v)
         return tok
@@ -148,7 +147,7 @@ class WordTokenizer(BaseTokenizer):
     def def_eobjs(self):
         return {'use_stemmer':self.use_stemmer,'stopwords':self.stopwords}
 
-    def tokenize(self,text,max_length=512):
+    def tokenize(self,text,max_length=None):
         toks=self.tweetok.tokenize(text)
         if max_length:
             toks=toks[:max_length]

@@ -21,7 +21,7 @@ if __name__ == "__main__":
     tok.fit_tokenizer(txts,1000,max_words=1000)
     tok.save_tokenizer(args.ofpath)
 
-    tok2=nortok.WordTokenizer.load_tokenizer(args.ofpath)
+    tok2=nortok.WordTokenizer.load_tokenizer(args.ofpath,nortok.WordTokenizer)
 
     seq1=tok.texts_to_sequences(txts,200)
     seq2=tok2.texts_to_sequences(txts,200)
@@ -37,3 +37,14 @@ if __name__ == "__main__":
     print('After pruning, {0} \
 entries are different from original. Original vocab size: {1}, \
 pruned vocab size: {2}'.format(len(cols),tok2.max_words,tok.max_words))
+
+    bpe=nortok.BPE(n_symbols=4000)
+    with open(args.ifpath) as ff:
+        bpe.get_vocabulary(ff)
+    bpe.train_bpe()
+
+    bpe.fit_tokenizer(txts,1000,max_words=1000)
+    bpeseq=bpe.texts_to_sequences(txts,200)
+    bpe.save_tokenizer(args.ofpath+'.bpe')
+
+    bpe2=nortok.BPE.load_tokenizer(args.ofpath+'.bpe',nortok.BPE)
