@@ -130,6 +130,7 @@ class BaseTokenizer(object):
 
 class WordTokenizer(BaseTokenizer):
     def __init__(self,word2ind=None,use_stopwords=False,use_stemmer=False,max_words=None,**kwargs):
+        self.strip_handles=False
         super(WordTokenizer, self).__init__(**kwargs)
         self.tweetok=TweetTokenizer(**kwargs)
         if use_stopwords:
